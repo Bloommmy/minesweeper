@@ -1,0 +1,2 @@
+# minesweeper
+Logic puzzle game
