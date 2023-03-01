@@ -1,0 +1,38 @@
+.timer{
+    display: flex;
+}
+.number{
+    width: 13px;
+    height: 23px;
+    background: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
+}
+.number[data-timer="0"] {
+    background-position: -126px 0;
+}
+.number[data-timer="1"] {
+    background-position: 0 0;
+}
+.number[data-timer="2"] {
+    background-position: -14px 0;
+}
+.number[data-timer="3"] {
+    background-position: -28px 0;
+}
+.number[data-timer="4"] {
+    background-position: -42px 0;
+}
+.number[data-timer="5"] {
+    background-position: -56px 0;
+}
+.number[data-timer="6"] {
+    background-position: -70px 0;
+}
+.number[data-timer="7"] {
+    background-position: -84px 0;
+}
+.number[data-timer="8"] {
+    background-position: -98px 0;
+}
+.number[data-timer="9"] {
+    background-position: -112px 0;
+}

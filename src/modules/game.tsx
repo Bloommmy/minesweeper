@@ -1,5 +1,6 @@
 import {CellStates} from './cell_states'
 import {CellState} from "./cell_state"
+import {MouseEvent} from "react";
 
 export enum StatusGame {
     new_game = 'new_game',
@@ -15,13 +16,25 @@ export class Game {
     mines: number;
     timer: number;
     statusTimer: ReturnType<typeof setInterval> | undefined;
+    listener?: () => void;
 
     constructor() {
         this.cells = this.createCells();
         this.statusGame = StatusGame.new_game;
-        this.mines = 4;
+        this.mines = 40;
         this.timer = 0;
         this.statusTimer = undefined;
+    }
+
+    addEventListen(listener: () => void): () => void {
+        this.listener = listener
+        return () => this.listener = undefined
+    }
+
+    pushEvent() {
+        if (this.listener) {
+            this.listener()
+        }
     }
 
     createCells() {
@@ -44,13 +57,12 @@ export class Game {
         if (action == 'start') {
             this.statusTimer = setInterval(() => {
                 this.timer = this.timer + 1
-                console.log(this.timer)
+                this.pushEvent()
             }, 1000)
         } else if (action == 'stop') {
             clearInterval(this.statusTimer)
         }
     }
-
 
     onClick(row: number, column: number) {
         if (this.statusGame === StatusGame.wow_new_game) {
@@ -65,6 +77,27 @@ export class Game {
                 this.openCells(row, column)
             }
         }
+    }
+
+    onMouseEvent(row: number, column: number, e: MouseEvent<HTMLDivElement>) {
+        if (e.type === 'contextmenu') {
+            this.onContextMenu(row, column)
+        } else if (e.type === 'mousedown' && e.button === 0) {
+            if (this.cells[row][column].visible === CellStates.close) {
+                if (this.statusGame === StatusGame.new_game) {
+                    this.updateGameStatus(StatusGame.wow_new_game)
+                } else if (this.statusGame === StatusGame.game) {
+                    this.updateGameStatus(StatusGame.wow)
+                }
+            }
+        } else if (e.type === 'mouseup' && e.button === 0) {
+            this.onClick(row, column)
+            if (this.statusGame === StatusGame.wow) {
+                this.updateGameStatus(StatusGame.game)
+            }
+
+        }
+        this.pushEvent()
     }
 
     onContextMenu(row: number, column: number) {
