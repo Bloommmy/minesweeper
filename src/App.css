@@ -1,0 +1,21 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  width: 256px;
+  justify-content: center;
+  align-items: center;
+  transform: scale(1.5)
+}
+
+#root {
+  background: #c0c0c0;
+  display: flex;
+  align-content: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  height: 100vh;
+}
+.Header {
+  display: flex;
+  width: 100%;
+}

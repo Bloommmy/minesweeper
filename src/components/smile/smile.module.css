@@ -1,0 +1,21 @@
+.Smile {
+    width: 26px;
+    height: 26px;
+    background: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
+}
+
+.Smile[data-game-status="game"], .Smile[data-game-status="new_game"] {
+    background-position: 0 -24px;
+}
+.Smile[data-game-status="wow"], .Smile[data-game-status="wow_new_game"] {
+    background-position: -54px -24px;
+}
+.Smile[data-game-status="finish"] {
+    background-position: -81px -24px;
+}
+.Smile[data-game-status="game_over"] {
+    background-position: -108px -24px;
+}
+.Smile[data-game-status="game"]:active, .Smile[data-game-status="new_game"]:active {
+    background-position: -27px -24px;
+}

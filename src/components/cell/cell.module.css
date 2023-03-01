@@ -1,0 +1,62 @@
+.cell {
+    width: 16px;
+    height: 16px;
+    background: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
+    --cell-icon-height: -51px;
+    --cell-number-height: -68px;
+}
+.cell[data-state="close"] {
+    background-position: 0 var(--cell-icon-height);
+}
+.cell[data-state="empty"] {
+    background-position: -17px var(--cell-icon-height);
+}
+.cell[data-state="flag"] {
+    background-position: -34px var(--cell-icon-height);
+}
+.cell[data-state="question"] {
+    background-position: -51px var(--cell-icon-height);
+}
+.cell[data-state="question_down"] {
+    background-position: -68px var(--cell-icon-height);
+}
+.cell[data-state="mine"] {
+    background-position: -85px var(--cell-icon-height);
+}
+.cell[data-state="mine_red"] {
+    background-position: -102px var(--cell-icon-height);
+}
+.cell[data-state="mine_cross"] {
+    background-position: -119px var(--cell-icon-height);
+}
+.cell[data-state="number_1"] {
+    background-position: 0 var(--cell-number-height);
+}
+.cell[data-state="number_2"] {
+    background-position: -17px var(--cell-number-height);
+}
+.cell[data-state="number_3"] {
+    background-position: -34px var(--cell-number-height);
+}
+.cell[data-state="number_4"] {
+    background-position: -51px var(--cell-number-height);
+}
+.cell[data-state="number_5"] {
+    background-position: -68px var(--cell-number-height);
+}
+.cell[data-state="number_6"] {
+    background-position: -85px var(--cell-number-height);
+}
+.cell[data-state="number_7"] {
+    background-position: -102px var(--cell-number-height);
+}
+.cell[data-state="number_8"] {
+    background-position: -119px var(--cell-number-height);
+}
+
+div:active > .cell[data-state="close"]:hover {
+    background-position: -17px var(--cell-icon-height);
+}
+div:active > .cell[data-state="question"]:hover {
+    background-position: -68px var(--cell-icon-height);
+}
