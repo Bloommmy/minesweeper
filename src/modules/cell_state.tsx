@@ -1,11 +1,18 @@
-import { CellStates } from './cell_states'
-
-export class CellState {
-    visible: CellStates;
-    hidden: CellStates;
-
-    constructor(visible: CellStates, hidden: CellStates) {
-        this.visible = visible;
-        this.hidden = hidden;
-    }
+export enum CellState {
+    close = 'close',
+    empty = 'empty',
+    flag = 'flag',
+    question = 'question',
+    question_down = 'question_down',
+    mine = 'mine',
+    mine_red = 'mine_red',
+    mine_cross = 'mine_cross',
+    number_1 = 'number_1',
+    number_2 = 'number_2',
+    number_3 = 'number_3',
+    number_4 = 'number_4',
+    number_5 = 'number_5',
+    number_6 = 'number_6',
+    number_7 = 'number_7',
+    number_8 = 'number_8',
 }

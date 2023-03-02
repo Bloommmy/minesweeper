@@ -1,7 +1,7 @@
 .cell {
     width: 16px;
     height: 16px;
-    background: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
+    background: var(--game-sprite);
     --cell-icon-height: -51px;
     --cell-number-height: -68px;
 }

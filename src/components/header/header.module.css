@@ -1,11 +1,12 @@
-.field {
+.header {
     display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    width: 256px;
+    padding: 6px;
+    justify-content: space-between;
+    align-items: center;
     border: 2px solid #fff;
     border-top-color: rgb(255, 255, 255);
     border-left-color: rgb(255, 255, 255);
     border-top-color: #808080;
     border-left-color: #808080;
+    margin-bottom: 6px;
 }

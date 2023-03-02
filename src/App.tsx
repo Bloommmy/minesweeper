@@ -2,9 +2,10 @@ import React, {MouseEvent, useEffect, useState} from 'react';
 import './App.css';
 import Field from './components/field/field'
 import Cell from "./components/cell/cell";
-import {Game, StatusGame} from "./modules/game"
+import { Game } from "./modules/game"
 import Smile from "./components/smile/smile";
-import Timer from "./components/timer/timer";
+import NumbersList from "./components/numbersList/numbersList";
+import Header from "./components/header/header";
 
 
 function App() {
@@ -23,10 +24,18 @@ function App() {
     })
     return (
         <div className="App">
-            <div className="Header">
-                <Smile emotion={gameData.statusGame}/>
-                <Timer timer={gameData.timer}/>
-            </div>
+            <Header children={
+                <>
+                    <NumbersList numerico={gameData.mines}/>
+                    <Smile emotion={gameData.statusGame} onClick={() => {
+                        game.stopStopwatch()
+                        const new_game = new Game()
+                        setGame(new_game)
+                        setGameData(new_game.getGameData())
+                    }}/>
+                    <NumbersList numerico={gameData.timer}/>
+                </>
+            }/>
             <Field children={
                 gameData.cells.map(
                     (row, index_row) => row.map(
@@ -38,7 +47,6 @@ function App() {
                                 key={ String(index_row) + '_' + String(index_cell) }
                                 onContextMenu={ (e) => {
                                     e.preventDefault()
-                                    onClick(index_row, index_cell, e)
                                 }}
                                 onMouseDown={ (e) => {
                                     onClick(index_row, index_cell, e)

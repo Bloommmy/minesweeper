@@ -1,7 +1,7 @@
 .Smile {
     width: 26px;
     height: 26px;
-    background: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
+    background: var(--game-sprite);
 }
 
 .Smile[data-game-status="game"], .Smile[data-game-status="new_game"] {

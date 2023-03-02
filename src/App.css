@@ -1,14 +1,20 @@
 .App {
-  display: flex;
-  flex-direction: column;
-  width: 256px;
-  justify-content: center;
-  align-items: center;
-  transform: scale(1.5)
+  position: relative;
+  zoom: 1.5;
+  width: min-content;
+  background: #c0c0c0;
+  border: 2px solid #fff;
+  border-right-color: rgb(255, 255, 255);
+  border-bottom-color: rgb(255, 255, 255);
+  border-bottom-color: #808080;
+  border-right-color: #808080;
+  padding: 6px;
+  transform: scale(1.5);
+  --game-sprite: url("https://davmedia.test.tech-mail.ru/editor_uploads/2023/02/07/minesweeper-sprites_9TPZzv3.png");
 }
 
 #root {
-  background: #c0c0c0;
+  background: black;
   display: flex;
   align-content: center;
   flex-wrap: wrap;

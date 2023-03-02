@@ -1,29 +1,36 @@
-import {CellStates} from './cell_states'
-import {CellState} from "./cell_state"
+import {CellState} from './cell_state'
+import {Cell} from "./cell"
 import {MouseEvent} from "react";
 
 export enum StatusGame {
-    new_game = 'new_game',
     game = 'game',
     game_over = 'game_over',
     wow = 'wow',
-    wow_new_game = 'wow_new_game',
     finish = 'finish'
 }
 export class Game {
-    cells: CellState[][];
-    statusGame: string;
-    mines: number;
-    timer: number;
-    statusTimer: ReturnType<typeof setInterval> | undefined;
+    field_size: number;
+    field: Cell[][];
+    game_status: string;
+    first_click: boolean;
+    mines_sum: number;
+    stopwatch_value: number;
+    stopwatch: ReturnType<typeof setInterval> | undefined;
     listener?: () => void;
 
     constructor() {
-        this.cells = this.createCells();
-        this.statusGame = StatusGame.new_game;
-        this.mines = 40;
-        this.timer = 0;
-        this.statusTimer = undefined;
+        this.first_click = false;
+        this.field_size = 16;
+        this.mines_sum = 6;
+        this.game_status = StatusGame.game;
+        this.stopwatch_value = 0;
+        this.stopwatch = undefined;
+        this.field = this.createField();
+    }
+
+    createField() {
+        const createRow = () => new Array(this.field_size).fill(1).map(() => new Cell(CellState.close, CellState.empty))
+        return new Array(this.field_size).fill(1).map(createRow)
     }
 
     addEventListen(listener: () => void): () => void {
@@ -37,91 +44,103 @@ export class Game {
         }
     }
 
-    createCells() {
-        const createRow = () => new Array(16).fill(1).map(() => new CellState(CellStates.close, CellStates.empty))
-        return new Array(16).fill(1).map(createRow)
-    }
     updateGameStatus(new_status: StatusGame) {
-        this.statusGame = new_status
+        this.game_status = new_status
     }
 
     getGameData() {
         return {
-            cells: this.cells,
-            statusGame: this.statusGame,
-            timer: this.timer,
+            cells: this.field,
+            statusGame: this.game_status,
+            timer: this.stopwatch_value,
+            mines: this.mines_sum
         }
     }
 
-    setTimer(action: string) {
-        if (action == 'start') {
-            this.statusTimer = setInterval(() => {
-                this.timer = this.timer + 1
-                this.pushEvent()
-            }, 1000)
-        } else if (action == 'stop') {
-            clearInterval(this.statusTimer)
-        }
+    startStopwatch() {
+        this.stopwatch = setInterval(() => {
+            this.stopwatch_value = this.stopwatch_value + 1
+            this.pushEvent()
+        }, 1000)
     }
 
-    onClick(row: number, column: number) {
-        if (this.statusGame === StatusGame.wow_new_game) {
-            this.generatorMine(row, column)
-            this.generatorNumber()
-            this.statusGame = StatusGame.game
-            this.setTimer('start')
-        }
-
-        if (this.statusGame !== StatusGame.game_over) {
-            if (this.statusGame != StatusGame.finish) {
-                this.openCells(row, column)
-            }
-        }
+    stopStopwatch() {
+        clearInterval(this.stopwatch)
     }
 
     onMouseEvent(row: number, column: number, e: MouseEvent<HTMLDivElement>) {
-        if (e.type === 'contextmenu') {
-            this.onContextMenu(row, column)
-        } else if (e.type === 'mousedown' && e.button === 0) {
-            if (this.cells[row][column].visible === CellStates.close) {
-                if (this.statusGame === StatusGame.new_game) {
-                    this.updateGameStatus(StatusGame.wow_new_game)
-                } else if (this.statusGame === StatusGame.game) {
-                    this.updateGameStatus(StatusGame.wow)
+        switch (e.button) {
+            case 2:
+                if (e.type === 'mouseup') {
+                    this.onRightButton(row, column)
                 }
-            }
-        } else if (e.type === 'mouseup' && e.button === 0) {
-            this.onClick(row, column)
-            if (this.statusGame === StatusGame.wow) {
-                this.updateGameStatus(StatusGame.game)
-            }
-
+                break
+            case 0:
+                switch (e.type) {
+                    case 'mousedown':
+                        if (this.field[row][column].visible === CellState.close) {
+                            if (this.game_status === StatusGame.game) {
+                                this.updateGameStatus(StatusGame.wow)
+                            }
+                        }
+                        break
+                    case 'mouseup':
+                        if (this.game_status === StatusGame.wow) {
+                            this.updateGameStatus(StatusGame.game)
+                        }
+                        this.onLeftButton(row, column)
+                        break
+                }
+                break
         }
         this.pushEvent()
     }
 
-    onContextMenu(row: number, column: number) {
-        if (this.statusGame != StatusGame.game_over) {
-            if (this.cells[row][column].visible == CellStates.close) {
-                this.updateCellVisible(row, column, CellStates.flag);
-                this.checkFinish()
-            } else if (this.cells[row][column].visible == CellStates.flag) {
-                this.updateCellVisible(row, column, CellStates.question);
-            } else if (this.cells[row][column].visible == CellStates.question) {
-                this.updateCellVisible(row, column, CellStates.close);
-            }
+    onLeftButton(row: number, column: number) {
+        if (this.game_status === StatusGame.game_over || this.game_status === StatusGame.finish) {
+            return;
         }
+        this.startGame(row, column)
+        this.openCells(row, column)
+    }
+
+    onRightButton(row: number, column: number) {
+        if (this.game_status === StatusGame.game_over || this.game_status === StatusGame.finish) {
+            return;
+        }
+        switch (this.field[row][column].visible) {
+            case CellState.close:
+                this.updateCellVisible(row, column, CellState.flag);
+                this.mines_sum = this.mines_sum - 1;
+                this.checkFinish();
+                break;
+            case CellState.flag:
+                this.updateCellVisible(row, column, CellState.question);
+                this.mines_sum = this.mines_sum + 1;
+                break;
+            case CellState.question:
+                this.updateCellVisible(row, column, CellState.close);
+                break;
+        }
+    }
+
+    startGame(row: number, column: number) {
+        if (this.first_click) {
+            return;
+        }
+        this.generatorMines(row, column)
+        this.generatorNumbers()
+        this.game_status = StatusGame.game
+        this.startStopwatch()
+        this.first_click = true
     }
 
     checkFinish() {
         let check_no_mine = true
-        this.cells.forEach((row) => {
+        this.field.forEach((row) => {
             row.forEach((cell) => {
-                if (cell.hidden != CellStates.mine) {
-                    if (cell.visible == CellStates.close) {
-                        check_no_mine = false
-                        return
-                    } else if (cell.visible == CellStates.flag) {
+                if (cell.hidden !== CellState.mine) {
+                    if (cell.visible === CellState.close || cell.visible === CellState.flag) {
                         check_no_mine = false
                         return
                     }
@@ -129,125 +148,127 @@ export class Game {
             })
         })
 
-        if (check_no_mine) {
-            this.cells.forEach((row, index_row) => {
-                row.forEach((cell, index_cell) => {
-                    if (cell.hidden == CellStates.mine) {
-                        this.updateCellVisible(index_row, index_cell, CellStates.flag)
-                    }
-                })
-            })
-            this.statusGame = StatusGame.finish
-            this.setTimer('stop')
-        }
-    }
-
-    openCells(row: number, column: number) {
-        if (!this.cells[row] || !this.cells[row][column]) {
+        if (!check_no_mine) {
             return;
         }
 
-        if (this.cells[row][column].visible !== CellStates.close) {
-            if (this.cells[row][column].visible !== CellStates.flag) {
-                if (this.cells[row][column].visible !== CellStates.question) {
-                    return;
+        this.field.forEach((row, index_row) => {
+            row.forEach((cell, index_cell) => {
+                if (cell.hidden === CellState.mine) {
+                    this.updateCellVisible(index_row, index_cell, CellState.flag);
                 }
+            })
+        })
+        this.game_status = StatusGame.finish;
+        this.stopStopwatch();
+        this.mines_sum = 0;
+    }
+
+    openCells(row: number, column: number) {
+        if (!this.field[row] || !this.field[row][column]) {
+            return;
+        }
+
+        if (this.field[row][column].visible === CellState.flag) {
+            return;
+        }
+
+        if (this.field[row][column].visible !== CellState.question) {
+            if (this.field[row][column].visible !== CellState.close) {
+                return;
             }
         }
 
-        if (this.cells[row][column].hidden === CellStates.mine) {
-            //Идем по массиву и открываем остальные мины
-            this.cells.map((row, index_row) => (
-                // eslint-disable-next-line
-                row.map((cell, index_cell) => {
-                    if (cell.hidden === CellStates.mine) {
-                         this.updateCellVisible(index_row, index_cell, CellStates.mine)
+        if (this.field[row][column].hidden === CellState.mine) {
+            this.field.forEach((row, index_row) => (
+                row.forEach((cell, index_cell) => {
+                    if (cell.hidden === CellState.mine) {
+                         this.updateCellVisible(index_row, index_cell, CellState.mine)
                     } else {
-                        if (cell.visible == CellStates.flag) {
-                            this.updateCellVisible(index_row, index_cell, CellStates.mine_cross)
+                        if (cell.visible === CellState.flag) {
+                            this.updateCellVisible(index_row, index_cell, CellState.mine_cross)
                         }
                     }
                 })
             ))
-            this.updateCellVisible(row, column, CellStates.mine_red)
-            this.statusGame = StatusGame.game_over
-            this.setTimer('stop')
+            this.updateCellVisible(row, column, CellState.mine_red)
+            this.game_status = StatusGame.game_over
+            this.stopStopwatch()
             return;
         }
 
-        this.updateCellVisible(row, column, this.cells[row][column].hidden);
+        this.updateCellVisible(row, column, this.field[row][column].hidden);
 
-        if (this.cells[row][column].hidden === CellStates.empty) {
-            this.onClick(row - 1, column);
-            this.onClick(row + 1, column);
-            this.onClick(row - 1, column - 1);
-            this.onClick(row +1, column - 1);
-            this.onClick(row, column - 1);
-            this.onClick(row, column + 1);
-            this.onClick(row + 1, column + 1);
-            this.onClick(row - 1, column + 1);
+        if (this.field[row][column].hidden === CellState.empty) {
+            this.onLeftButton(row - 1, column);
+            this.onLeftButton(row + 1, column);
+            this.onLeftButton(row - 1, column - 1);
+            this.onLeftButton(row +1, column - 1);
+            this.onLeftButton(row, column - 1);
+            this.onLeftButton(row, column + 1);
+            this.onLeftButton(row + 1, column + 1);
+            this.onLeftButton(row - 1, column + 1);
         }
 
         this.checkFinish()
     }
 
-    updateCellVisible(row: number, column: number, new_value: CellStates) {
-        this.cells[row][column]["visible"] = new_value
-        this.cells = [...this.cells]
+    updateCellVisible(row: number, column: number, new_value: CellState) {
+        this.field[row][column]["visible"] = new_value
+        this.field = [...this.field]
     }
 
-    updateCellHidden(row: number, column: number, new_value: CellStates) {
-        this.cells[row][column]["hidden"] = new_value
-        this.cells = [...this.cells]
+    updateCellHidden(row: number, column: number, new_value: CellState) {
+        this.field[row][column]["hidden"] = new_value
+        this.field = [...this.field]
     }
 
-    generatorMine(firstClickRow: number, firstClickColumn: number) {
+    generatorMines(row: number, column: number) {
         const arrayRandElement = (arr: Number[]) => {
             return Math.floor(Math.random() * arr.length);
         }
 
         const getRowColumn = (number: Number) => {
-            const row = Math.trunc(Number(number)/16)
-            const column = Number(number) - (row*16)
+            const row = Math.trunc(Number(number) / this.field_size)
+            const column = Number(number) - (row * this.field_size)
             return [row, column]
         }
 
         let start = 0;
         let cells = [];
 
-        while (start < 16*16) {
+        while (start < this.field_size * this.field_size) {
             cells.push(start++);
         }
 
-        const firstClick = (firstClickRow * 16) + firstClickColumn
-        cells = cells.filter((n) => {return n !== firstClick})
+        const first_click = (row * this.field_size) + column
+        cells = cells.filter((n) => {return n !== first_click})
 
         let count = 0;
 
-        while (count < this.mines + 1) {
+        while (count < this.mines_sum + 1) {
             const random_index = arrayRandElement(cells)
             const [row, column] = getRowColumn(cells[random_index])
 
-            this.updateCellHidden(row, column, CellStates.mine)
+            this.updateCellHidden(row, column, CellState.mine)
 
             cells = cells.filter((n) => {return n !== random_index})
             count++
         }
     }
 
-    countMineCircle(row: number, column: number) {
+    countMinesCircle(row: number, column: number) {
         const around = [
             [-1, -1], [-1, 0], [-1, +1], [0, -1], [0, +1], [+1, -1], [+1, 0], [+1, +1]
         ]
 
         let count_mine = 0
-        // eslint-disable-next-line
-        around.map((cell) => {
+        around.forEach((cell) => {
             const x = row + cell[0]
             const y = column + cell[1]
-            if (this.cells[x]) {
-                if (this.cells[x][y]) {
-                    if (this.cells[x][y].hidden === CellStates.mine) {
+            if (this.field[x]) {
+                if (this.field[x][y]) {
+                    if (this.field[x][y].hidden === CellState.mine) {
                         count_mine++
                     }
                 }
@@ -256,14 +277,12 @@ export class Game {
         return count_mine
     }
 
-    generatorNumber() {
-        const states = [CellStates.number_1, CellStates.number_2, CellStates.number_3, CellStates.number_4, CellStates.number_5, CellStates.number_6, CellStates.number_7, CellStates.number_8]
-
-        this.cells.map((row, index_row) => (
-            // eslint-disable-next-line
-            row.map((cell, index_cell) => {
-                if (cell.hidden === CellStates.empty) {
-                    const count_mine = this.countMineCircle(index_row, index_cell)
+    generatorNumbers() {
+        const states = [CellState.number_1, CellState.number_2, CellState.number_3, CellState.number_4, CellState.number_5, CellState.number_6, CellState.number_7, CellState.number_8]
+        this.field.forEach((row, index_row) => (
+            row.forEach((cell, index_cell) => {
+                if (cell.hidden === CellState.empty) {
+                    const count_mine = this.countMinesCircle(index_row, index_cell)
                     if (count_mine > 0 ) {
                         this.updateCellHidden(index_row, index_cell, states[count_mine-1])
                     }

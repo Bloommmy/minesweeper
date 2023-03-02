@@ -1,11 +1,11 @@
 import React, {MouseEventHandler} from 'react';
 import styles from './cell.module.css';
-import { CellStates } from '../../modules/cell_states';
+import { CellState } from '../../modules/cell_state';
 
 type CellProps = {
     row: number,
     column: number,
-    state: CellStates,
+    state: CellState,
     onContextMenu: MouseEventHandler<HTMLDivElement>,
     onMouseDown: MouseEventHandler<HTMLDivElement>,
     onMouseUp: MouseEventHandler<HTMLDivElement>,
