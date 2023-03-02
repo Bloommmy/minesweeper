@@ -21,7 +21,7 @@ export class Game {
     constructor() {
         this.first_click = false;
         this.field_size = 16;
-        this.mines_sum = 6;
+        this.mines_sum = 40;
         this.game_status = StatusGame.game;
         this.stopwatch_value = 0;
         this.stopwatch = undefined;
