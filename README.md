@@ -1,5 +1,12 @@
-# minesweeper
-Logic puzzle game
+# Minesweeper
+Несложная игра, которая, тем не менее, развивает внимание, память и логику. Основная ее цель — найти и обозначить флажками мины.
+
+## Стек
+- TypeSrcipt
+- React
+- Node.js
+- HTML
+- CSS
 
 # Getting Started with Create React App
 
